@@ -1,17 +1,22 @@
 package usecase;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
 import material.maps.HashTableMapLP;
-import material.maps.HashTableMapQP;
-import material.maps.HashTableMapSC;
 
 public class FlightManager {
 
-    private HashTableMapLP<Integer, Flight> flights = new HashTableMapLP<>();
-    private HashTableMapLP<String, Passenger> passengers = new HashTableMapLP<>();
-    private HashTableMapLP<Flight, List<Passenger>> info = new HashTableMapLP<>();
+    //flights map key = flightCode
+    private HashTableMapLP<Integer, Flight> flightsDB = new HashTableMapLP<>();
+    //passengers map key = DNI
+    private HashTableMapLP<String, Passenger> passengerDB = new HashTableMapLP<>();
+    //map each flight with its list of passengers
+    private HashTableMapLP<Flight, List<Passenger>> flightPassengers = new HashTableMapLP<>();
     private List<String> airports = new LinkedList<>();
+
+    public FlightManager() {
+    }
 
     public Flight addFlight(String company, int flightCode, int year, int month, int day)
     {
@@ -28,18 +33,27 @@ public class FlightManager {
     }
     private boolean exist (int flightCode)
     {
-        for(Integer key: flights.keys())
+        for(Integer key: flightsDB.keys())
         {
             if(key.equals(flightCode))
                 return false;
         }
         return true;
     }
+    private boolean exist (String DNI)
+    {
+        for(String key: passengerDB.keys())
+        {
+            if(key.equals(DNI))
+                return true;
+        }
+        return false;
+    }
 
     public Flight getFlight(String company, int flightCode, int year, int month, int day) {
         if(exist(flightCode))
         {
-           Flight aux = flights.get(flightCode);
+           Flight aux = flightsDB.get(flightCode);
            return aux;
         }
         else
@@ -50,39 +64,52 @@ public class FlightManager {
     public void updateFlight(String company, int flightCode, int year, int month, int day, Flight updatedFlightInfo) {
        if(exist(flightCode))
        {
-            Flight f = flights.get(flightCode);
-            flights.remove(flightCode);
-            flights.put(flightCode,updatedFlightInfo);
+            Flight f = flightsDB.get(flightCode);
+            flightsDB.remove(flightCode);
+            flightsDB.put(flightCode,updatedFlightInfo);
        }
         else
             throw  new RuntimeException("The flight doesn't exists and can't be updated.");
     }
 
     public void addPassenger(String dni, String name, String surname, Flight flight) {
-       Passenger newPassenger = new Passenger(dni,name,surname);
+       //Passenger newPassenger = new Passenger(dni,name,surname);
+        Passenger newPassenger = new Passenger();
+        newPassenger.setDNI(dni);
+        newPassenger.setName(name);
+        newPassenger.setSurname(surname);
        if(exist(flight.getFlightCode()))
        {
-            if(passengers.get(dni) != null)
+           //update passengers database
+            if(passengerDB.get(dni) != null)
             {
-                passengers.remove(dni);
-                passengers.put(dni,newPassenger);
+                passengerDB.remove(dni);
+                passengerDB.put(dni,newPassenger);
             }
             else
             {
-                passengers.put(dni,newPassenger);
+                passengerDB.put(dni,newPassenger);
             }
-            List<Passenger> aux = info.get(flight);
+            //update list of passengers of the flight
+            List<Passenger> aux = flightPassengers.get(flight);
             aux.add(newPassenger);
-            info.remove(flight);
-            info.put(flight,aux);
+            flightPassengers.remove(flight);
+            flightPassengers.put(flight,aux);
        }
        else
            throw new RuntimeException("The flight doesn't exits.");
     }
 
 
-    public Iterable<Passenger> getPassengers(String company, int flightCode, int year, int month, int day) {
-        throw new RuntimeException("Not yet implemented.");
+    public Iterable<Passenger> getPassengers(String company, int flightCode, int year, int month, int day)
+    {
+        //TODO check if flight is full
+        if(exist(flightCode))
+        {
+            return flightPassengers.get(flightsDB.get(flightCode));
+        }
+        else
+            throw new RuntimeException("The flight doesn't exits.");
     }
 
     public Iterable<Flight> flightsByDate(int year, int month, int day) {
@@ -90,10 +117,33 @@ public class FlightManager {
     }
 
     public Iterable<Flight> getFlightsByPassenger(Passenger passenger) {
-        throw new RuntimeException("Not yet implemented.");
+        List<Flight> flightArrayList = new ArrayList<>();
+        if(exist(passenger.getDNI()))
+        {
+            for(Flight f : flightPassengers.keys())
+            {
+                if(flightPassengers.get(f).contains(passenger))
+                {
+                    flightArrayList.add(f);
+                }
+            }
+            return flightArrayList;
+        }
+        else
+            return flightArrayList;
     }
 
     public Iterable<Flight> getFlightsByDestination(String destination, int year, int month, int day) {
+        List<Flight> flightArrayList = new ArrayList<>();
+        for(Flight f : flightsDB.values())
+        {
+            //TODO TIME
+            if(f.getDestination().equals(destination) && f.getTime() == null)
+            {
+                flightArrayList.add(f);
+            }
+        }
+
         throw new RuntimeException("Not yet implemented.");
 
     }

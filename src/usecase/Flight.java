@@ -111,6 +111,8 @@ public class Flight {
         this.capacity = capacity;
     }
 
+    public Date getTime(){return null;}
+
     public void setTime(int hours, int minutes) {
         this.hours = hours;
         this.minutes = minutes;

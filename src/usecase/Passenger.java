@@ -5,6 +5,9 @@ public class Passenger {
 
     private String DNI , name , surname;
 
+    public Passenger() {
+    }
+
     public Passenger(String DNI, String name, String surname) {
         this.DNI = DNI;
         this.name = name;
