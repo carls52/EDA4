@@ -4,8 +4,12 @@ package usecase;
 import material.maps.HashTableMapQP;
 
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 
 public class Flight {
     private int hours;
@@ -36,7 +40,9 @@ public class Flight {
 
 
     public Flight(){
-
+        this.minutes = -1;
+        this.hours = -1;
+        this.delay = -1;
     }
 
     public int getHours() {
@@ -111,7 +117,14 @@ public class Flight {
         this.capacity = capacity;
     }
 
-    public Date getTime(){return null;}
+    public String getDate()
+    {
+        LocalDate myDateObj = LocalDate.of(this.year,this.month,this.day);
+        DateTimeFormatter myFormatObj = DateTimeFormatter.ofPattern("dd-MM-yyyy");
+        String formattedDate = myDateObj.format(myFormatObj);
+
+        return formattedDate;
+    }
 
     public void setTime(int hours, int minutes) {
         this.hours = hours;
@@ -123,6 +136,7 @@ public class Flight {
        this.day = day;
        this.month = month;
     }
+
     public void setProperty(String attribute, String value) {
         this.map.put(attribute,value);
     }
@@ -135,4 +149,43 @@ public class Flight {
         return map.keys();
     }
 
+    @Override
+    public String toString() {
+
+        String output = " ";
+        output = this.getDate();
+        output += "\t"+this.company+this.flightCode;
+        if(this.hours != -1 && this.minutes != -1)
+            output += "\t"+this.hours+":"+this.minutes;
+        if(this.origin != null)
+            output += "\t"+this.origin;
+        if(this.destination!=null)
+            output+= "\t"+this.destination;
+        if(this.delay != -1)
+            output += "\tDELAYED ("+this.delay+"min)";
+        return output;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Flight flight = (Flight) o;
+        return flightCode == flight.flightCode &&
+                delay == flight.delay &&
+                year == flight.year &&
+                day == flight.day &&
+                month == flight.month &&
+                capacity == flight.capacity &&
+                company.equals(flight.company) &&
+                Objects.equals(origin, flight.origin) &&
+                Objects.equals(destination, flight.destination) &&
+                date.equals(flight.date) &&
+                Objects.equals(map, flight.map);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(company, origin, destination, flightCode, delay, year, day, month, capacity, date, map);
+    }
 }
